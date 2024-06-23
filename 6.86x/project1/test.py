@@ -449,10 +449,10 @@ def main():
         check_average_perceptron()
         check_pegasos_single_update()
         check_pegasos()
-        # check_classify()
-        # check_classifier_accuracy()
-        # check_bag_of_words()
-        # check_extract_bow_feature_vectors()
+        check_classify()
+        check_classifier_accuracy()
+        check_bag_of_words()
+        check_extract_bow_feature_vectors()
     except Exception:
         log_exit(traceback.format_exc())
 

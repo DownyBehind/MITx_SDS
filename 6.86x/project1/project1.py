@@ -342,6 +342,12 @@ def classify(feature_matrix, theta, theta_0):
         given theta and theta_0. If a prediction is GREATER THAN zero, it
         should be considered a positive classification.
     """
+    epsilon = 10**(-8)
+    prediction = feature_matrix @ theta + theta_0
+    # 각 점이 어떤 값을 가질 수 있는지 판단 
+    return np.where(prediction > epsilon, 1, -1)
+    # 각 결과가 epsilon보다 크면 1, 작으면 -1을 리턴
+
     # Your code here
     raise NotImplementedError
 
@@ -379,12 +385,21 @@ def classifier_accuracy(
         trained classifier on the training data and the second element is the
         accuracy of the trained classifier on the validation data.
     """
-    # Your code here
+    theta, theta_0 = classifier(train_feature_matrix, train_labels, **kwargs)
+
+    training_preds = classify(train_feature_matrix, theta, theta_0)
+    validation_preds = classify(val_feature_matrix, theta, theta_0)
+
+    training_accu = accuracy(training_preds, train_labels)
+    validation_accu = accuracy(validation_preds, val_labels)
+
+    return (training_accu, validation_accu)
+
     raise NotImplementedError
 
 
 
-def extract_words(text):
+def extract_words(input_string):
     """
     Helper function for `bag_of_words(...)`.
     Args:
@@ -393,7 +408,10 @@ def extract_words(text):
         a list of lowercased words in the string, where punctuation and digits
         count as their own words.
     """
-    # Your code here
+    for c in punctuation + digits:
+        input_string = input_string.replace(c, ' ' + c + ' ')
+
+    return input_string.lower().split()
     raise NotImplementedError
 
     for c in punctuation + digits:
@@ -402,7 +420,7 @@ def extract_words(text):
 
 
 
-def bag_of_words(texts, remove_stopword=False):
+def bag_of_words(texts):
     """
     NOTE: feel free to change this code as guided by Section 3 (e.g. remove
     stopwords, add bigrams etc.)
@@ -414,6 +432,17 @@ def bag_of_words(texts, remove_stopword=False):
         integer `index`.
     """
     # Your code here
+    f = open('stopwords.txt')
+    stopwords = extract_words(f.read())
+    f.close()
+
+    dictionary = {} # maps word to unique index
+    for text in texts:
+        word_list = extract_words(text)
+        for word in word_list:
+            if word not in dictionary and word not in stopwords:
+                dictionary[word] = len(dictionary)
+    return dictionary
     raise NotImplementedError
     
     indices_by_word = {}  # maps word to unique index
@@ -426,29 +455,50 @@ def bag_of_words(texts, remove_stopword=False):
 
     return indices_by_word
 
-
-
-def extract_bow_feature_vectors(reviews, indices_by_word, binarize=True):
+def extract_bow_feature_vectors(reviews, dictionary):
     """
-    Args:
-        `reviews` - a list of natural language strings
-        `indices_by_word` - a dictionary of uniquely-indexed words.
-    Returns:
-        a matrix representing each review via bag-of-words features.  This
-        matrix thus has shape (n, m), where n counts reviews and m counts words
-        in the dictionary.
+    Inputs a list of string reviews
+    Inputs the dictionary of words as given by bag_of_words
+    Returns the bag-of-words feature matrix representation of the data.
+    The returned matrix is of shape (n, m), where n is the number of reviews
+    and m the total number of entries in the dictionary.
+
+    Feel free to change this code as guided by Problem 9
     """
     # Your code here
-    feature_matrix = np.zeros([len(reviews), len(indices_by_word)], dtype=np.float64)
+
+    num_reviews = len(reviews)
+    feature_matrix = np.zeros([num_reviews, len(dictionary)])
+
     for i, text in enumerate(reviews):
         word_list = extract_words(text)
         for word in word_list:
-            if word not in indices_by_word: continue
-            feature_matrix[i, indices_by_word[word]] += 1
-    if binarize:
-        # Your code here
-        raise NotImplementedError
+            if word in dictionary:
+                feature_matrix[i, dictionary[word]] = 1
     return feature_matrix
+
+
+# def extract_bow_feature_vectors(reviews, indices_by_word, binarize=True):
+#     """
+#     Args:
+#         `reviews` - a list of natural language strings
+#         `indices_by_word` - a dictionary of uniquely-indexed words.
+#     Returns:
+#         a matrix representing each review via bag-of-words features.  This
+#         matrix thus has shape (n, m), where n counts reviews and m counts words
+#         in the dictionary.
+#     """
+#     # Your code here
+#     feature_matrix = np.zeros([len(reviews), len(indices_by_word)], dtype=np.float64)
+#     for i, text in enumerate(reviews):
+#         word_list = extract_words(text)
+#         for word in word_list:
+#             if word not in indices_by_word: continue
+#             feature_matrix[i, indices_by_word[word]] += 1
+#     if binarize:
+#         # Your code here
+#         raise NotImplementedError
+#     return feature_matrix
 
 
 
