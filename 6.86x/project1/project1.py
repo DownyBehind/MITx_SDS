@@ -40,6 +40,7 @@ def hinge_loss_single(feature_vector, label, theta, theta_0):
     """
     # Your code here
     agreement = label * (np.dot(feature_vector, theta) + theta_0)
+    # claculation of agreement
     hinge_loss = max(0, 1 - agreement)
     return hinge_loss
     raise NotImplementedError
@@ -62,11 +63,32 @@ def hinge_loss_full(feature_matrix, labels, theta, theta_0):
         the hinge loss, as a float, associated with the given dataset and
         parameters.  This number should be the average hinge loss across all of
     """
+    agreement = labels * (feature_matrix @ theta + theta_0)
+    # @ oprator is a function of matrix multiplication
+    """
+    import numpy as np
+    
+    # input
+    A = np.array([[1, 2], [3, 4]])
+    B = np.array([[5, 6], [7, 8]])
+    
+    product = A @ B 
+    # matrix of multiplication 
+    
+    print(product)
+
+    # output
+    [[19 22]
+    [43 50]]
+    """
+    hinge_loss = np.maximum(0, 1 - agreement)
+    # choose maximum values of each elements
+
+    return np.mean(hinge_loss)
+    # average values of all elements
 
     # Your code here
     raise NotImplementedError
-
-
 
 
 def perceptron_single_step_update(
@@ -90,6 +112,20 @@ def perceptron_single_step_update(
         the updated feature-coefficient parameter `theta` as a numpy array
         the updated offset parameter `theta_0` as a floating point number
     """
+    epsilon = 10**(-8)
+    if label * (feature_vector @ current_theta + current_theta_0) < epsilon:
+        # Actually epsilon can be replaced with zero 
+        # But why i choose the epsilon is not zero, sometimes the result of the conditions 
+        # can be float and between 0 and 1. In this case computer can decide the number is zero.
+        # for exceptping this confusion, i use the epsilon. 
+
+        # if the result of the condition is below the epsilon, it can be asssumed that 
+        # this classifier line is incorrect, so it will be modified
+        current_theta += feature_vector * label
+        current_theta_0 += label
+        # above two functions are the calculations for modify the classifier line
+    return (current_theta, current_theta_0)
+    
     # Your code here
     raise NotImplementedError
 
@@ -118,11 +154,26 @@ def perceptron(feature_matrix, labels, T):
             (found also after T iterations through the feature matrix).
     """
     # Your code here
-    raise NotImplementedError
+    n_data = feature_matrix.shape[0]
+    # the number of datas
+    n_para = feature_matrix.shape[1]
+    # the number of paras
+    theta = np.zeros(n_para)
+    theta_0 = 0
+    # print(feature_matrix.shape)
+    # print("feature_matrix")
+    # print(feature_matrix)
+    # print("n_data")
+    # print(n_data)
+    # print("n_para")
+    # print(n_para)
     for t in range(T):
-        for i in get_order(nsamples):
-            # Your code here
-            raise NotImplementedError
+        for i in get_order(n_data):
+            theta, theta_0 = perceptron_single_step_update(feature_matrix[i],
+                                                           labels[i],
+                                                           theta,
+                                                           theta_0)
+    return (theta, theta_0)
     # Your code here
     raise NotImplementedError
 
@@ -154,7 +205,22 @@ def average_perceptron(feature_matrix, labels, T):
         the average offset parameter `theta_0` as a floating point number
             (averaged also over T iterations through the feature matrix).
     """
-    # Your code here
+    n_data = feature_matrix.shape[0]
+    n_para = feature_matrix.shape[1]
+    theta = np.zeros(n_para)
+    theta_0 = 0
+    theta_mean = np.zeros(n_para)
+    theta_0_mean = 0
+    for t in range(T):
+        for i in get_order(n_data):
+            theta, theta_0 = perceptron_single_step_update(feature_matrix[i],
+                                                           labels[i],
+                                                           theta,
+                                                           theta_0)
+            theta_mean += theta/(T*n_data)
+            theta_0_mean += theta_0/(T*n_data)
+    return (theta_mean, theta_0_mean)
+
     raise NotImplementedError
 
 
@@ -163,8 +229,8 @@ def pegasos_single_step_update(
         label,
         L,
         eta,
-        theta,
-        theta_0):
+        current_theta,
+        current_theta_0):
     """
     Updates the classification parameters `theta` and `theta_0` via a single
     step of the Pegasos algorithm.  Returns new parameters rather than
@@ -185,7 +251,13 @@ def pegasos_single_step_update(
         real valued number with the value of theta_0 after the old updated has
         completed.
     """
-    # Your code here
+    if label * (feature_vector @ current_theta + current_theta_0) <= 1:
+        current_theta =  (1 - eta*L) * current_theta + eta * feature_vector * label
+        current_theta_0 = current_theta_0 + eta * label
+    else:
+        current_theta = (1 - eta*L) * current_theta
+    return (current_theta, current_theta_0)
+
     raise NotImplementedError
 
 
@@ -217,7 +289,23 @@ def pegasos(feature_matrix, labels, T, L):
         the value of the theta_0, the offset classification parameter, found
         after T iterations through the feature matrix.
     """
-    # Your code here
+    n_data = feature_matrix.shape[0]
+    n_para = feature_matrix.shape[1]
+    theta = np.zeros(n_para)
+    theta_0 = 0
+    count = 1
+    for t in range(T):
+        for i in get_order(n_data):
+            eta = 1/(count**0.5)
+            theta, theta_0 = pegasos_single_step_update(feature_matrix[i],
+                                                        labels[i],
+                                                        L,
+                                                        eta,
+                                                        theta,
+                                                        theta_0)
+            count += 1
+    return (theta, theta_0)
+
     raise NotImplementedError
 
 
