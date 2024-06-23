@@ -39,6 +39,9 @@ def hinge_loss_single(feature_vector, label, theta, theta_0):
         parameters.
     """
     # Your code here
+    agreement = label * (np.dot(feature_vector, theta) + theta_0)
+    hinge_loss = max(0, 1 - agreement)
+    return hinge_loss
     raise NotImplementedError
 
 
