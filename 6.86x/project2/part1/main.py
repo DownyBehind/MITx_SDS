@@ -33,7 +33,9 @@ def run_linear_regression_on_MNIST(lambda_factor=0.01):
         Final test error
     """
     train_x, train_y, test_x, test_y = get_MNIST_data()
-    train_x_bias = np.hstack([np.ones([train_x.shape[0], 1]), train_x]) # train_x.shape[0] is a row, 1 is a col, so n * 1 + train_x data 
+    print("train_x",train_x)
+    train_x_bias = np.hstack([np.ones([train_x.shape[0], 1]), train_x]) # train_x.shape[0] is a row, 1 is a col, so n * 1 + train_x data
+    print('train_x_bias',train_x_bias)
     test_x_bias = np.hstack([np.ones([test_x.shape[0], 1]), test_x])
     theta = closed_form(train_x_bias, train_y, lambda_factor)
     test_error = compute_test_error_linear(test_x_bias, test_y, theta)
@@ -114,6 +116,10 @@ def run_softmax_on_MNIST(temp_parameter=1):
 
     # TODO: add your code here for the "Using the Current Model" question in tab 6.
     #      and print the test_error_mod3
+
+    error_rate_mod3 = compute_test_error_mod3(test_x, np.mod(test_y,3), theta, temp_parameter)
+    print("Error rate for labels mod 3: %2f" % error_rate_mod3)
+
     return test_error
 
 
@@ -135,11 +141,18 @@ def run_softmax_on_MNIST_mod3(temp_parameter=1):
     See run_softmax_on_MNIST for more info.
     """
     # YOUR CODE HERE
+    train_x, train_y, test_x, test_y = get_MNIST_data()
+    train_y_mod3, test_y_mod3 = update_y(train_y, test_y)
+    theta, cost_function_history = softmax_regression(train_x, train_y_mod3, temp_parameter, alpha= 0.3, lambda_factor = 1.0e-4, k = 10, num_iterations = 150)
+    plot_cost_function_over_time(cost_function_history)
+    test_error = compute_test_error(test_x, test_y_mod3, theta, temp_parameter)
+    return test_error
     raise NotImplementedError
 
 
 # TODO: Run run_softmax_on_MNIST_mod3(), report the error rate
 
+print("Error rate when trained on labels mod 3: %2f" % run_softmax_on_MNIST_mod3(temp_parameter=1))
 
 #######################################################################
 # 7. Classification Using Manually Crafted Features
@@ -164,7 +177,11 @@ test_pca = project_onto_PC(test_x, pcs, n_components, feature_means)
 
 # TODO: Train your softmax regression model using (train_pca, train_y)
 #       and evaluate its accuracy on (test_pca, test_y).
+temp_parameter=1
+theta, _ = softmax_regression(train_pca, train_y, temp_parameter, alpha= 0.3, lambda_factor = 1.0e-4, k = 10, num_iterations = 150)
+test_error = compute_test_error(test_pca, test_y, theta, temp_parameter)
 
+print("Error rate for pca: %2f" % test_error)
 
 # TODO: Use the plot_PC function in features.py to produce scatterplot
 #       of the first 100 MNIST images, as represented in the space spanned by the
@@ -187,7 +204,12 @@ plot_images(train_x[1, ])
 
 ## Cubic Kernel ##
 # TODO: Find the 10-dimensional PCA representation of the training and test set
+n_components = 10
+train_x_centered, feature_means = center_data(train_x)
 
+pcs = principal_components(train_x_centered)
+train_pca10 = project_onto_PC(train_x, pcs, n_components, feature_means)
+test_pca10 = project_onto_PC(test_x, pcs, n_components, feature_means)
 
 # TODO: First fill out cubicFeatures() function in features.py as the below code requires it.
 
@@ -199,3 +221,8 @@ test_cube = cubic_features(test_pca10)
 
 # TODO: Train your softmax regression model using (train_cube, train_y)
 #       and evaluate its accuracy on (test_cube, test_y).
+temp_parameter = 1
+theta, _ = softmax_regression(train_cube, train_y, temp_parameter, alpha= 0.3, lambda_factor = 1.0e-4, k = 10, num_iterations = 150)
+test_error = compute_test_error(test_cube, test_y, theta, temp_parameter)
+
+print("Error rate for cubic pca: %2f" % test_error)

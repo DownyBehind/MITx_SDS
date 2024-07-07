@@ -20,6 +20,7 @@ def polynomial_kernel(X, Y, c, p):
             kernel_matrix - (n, m) Numpy array containing the kernel matrix
     """
     # YOUR CODE HERE
+    return (X @ Y.T + c)**p
     raise NotImplementedError
 
 
@@ -39,4 +40,8 @@ def rbf_kernel(X, Y, gamma):
             kernel_matrix - (n, m) Numpy array containing the kernel matrix
     """
     # YOUR CODE HERE
+    # for every data point, compute its norm, then compute the distance
+    distance = np.sum(X**2, 1).reshape(X.shape[0], 1) + np.sum(Y**2, 1) - 2 * X @ Y.T
+    return np.exp(-gamma * distance)
+
     raise NotImplementedError

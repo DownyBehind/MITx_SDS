@@ -37,7 +37,7 @@ def compute_probabilities(X, theta, temp_parameter):
     matrix_tmp = np.dot(theta, X.T) / temp_parameter # k * n
     # print('mat_tmp',mat_tmp)
     c = matrix_tmp.max(0) # 0 is col axis, 1 is row axis, so this case c is 1 * n
-    print('c',c)
+    # print('c',c)
     # print('np.sum(np.e ** (matrix_tmp - c), 0)',np.sum(np.e ** (matrix_tmp - c), 0))
     # print('np.e ** (matrix_tmp - c)', np.e ** (matrix_tmp - c))
     softmax_func = np.e ** (matrix_tmp - c) / np.sum(np.e ** (matrix_tmp - c), 0) 
@@ -66,6 +66,16 @@ def compute_cost_function(X, Y, theta, lambda_factor, temp_parameter):
         c - the cost value (scalar)
     """
     #YOUR CODE HERE
+    n_data = X.shape[0] # the number of n datas
+    k_para = theta.shape[0] # the number of k results 
+    correct = np.zeros([k_para, n_data]) # k * n 
+    for i in range(n_data): # iterate through all data
+        correct[Y[i]][i] = 1 # set the 'label'th row in i col to 1
+    clipped_probs = np.clip(compute_probabilities(X, theta, temp_parameter), 1e-15, 1-1e-15) 
+    # np.clip func is set min and max value in each elements
+    loss = -1 / n_data * np.sum(correct * np.log(clipped_probs))
+    regularization = lambda_factor/2 * np.linalg.norm(theta)**2 # np.linalg.norm is for calculating 2-norm  
+    return loss + regularization
     raise NotImplementedError
 
 def run_gradient_descent_iteration(X, Y, theta, alpha, lambda_factor, temp_parameter):
@@ -86,6 +96,16 @@ def run_gradient_descent_iteration(X, Y, theta, alpha, lambda_factor, temp_param
         theta - (k, d) NumPy array that is the final value of parameters theta
     """
     #YOUR CODE HERE
+    n_data = X.shape[0] # the number of the datas n
+    k_para = theta.shape[0] # the number of the parameters k
+    # get the matrix with correct entry = 1 and others = 0
+    correct = np.zeros([k_para, n_data])
+    for i in range(n_data): # iterate through all data
+        correct[Y[i]][i] = 1 # set the 'label'th row in i col to 1
+    clipped_probs = np.clip(compute_probabilities(X, theta, temp_parameter), 1e-15, 1-1e-15) # k * n the probabilities of the data points
+    jacobian = -1 / (n_data * temp_parameter) * (correct - clipped_probs) @ X + \
+        lambda_factor * theta
+    return theta - alpha * jacobian
     raise NotImplementedError
 
 def update_y(train_y, test_y):
@@ -106,6 +126,7 @@ def update_y(train_y, test_y):
                     for each datapoint in the test set
     """
     #YOUR CODE HERE
+    return np.mod(train_y, 3), np.mod(test_y, 3)
     raise NotImplementedError
 
 def compute_test_error_mod3(X, Y, theta, temp_parameter):
@@ -124,6 +145,8 @@ def compute_test_error_mod3(X, Y, theta, temp_parameter):
         test_error - the error rate of the classifier (scalar)
     """
     #YOUR CODE HERE
+    pred_Y = get_classification(X, theta, temp_parameter)
+    return 1 - np.mean(np.mod(pred_Y, 3) == Y)
     raise NotImplementedError
 
 def softmax_regression(X, Y, temp_parameter, alpha, lambda_factor, k, num_iterations):
