@@ -32,6 +32,21 @@ def compute_probabilities(X, theta, temp_parameter):
         H - (k, n) NumPy array, where each entry H[j][i] is the probability that X[i] is labeled as j
     """
     #YOUR CODE HERE
+    # print('X',X)
+    # print('theta', theta)
+    matrix_tmp = np.dot(theta, X.T) / temp_parameter # k * n
+    # print('mat_tmp',mat_tmp)
+    c = matrix_tmp.max(0) # 0 is col axis, 1 is row axis, so this case c is 1 * n
+    print('c',c)
+    # print('np.sum(np.e ** (matrix_tmp - c), 0)',np.sum(np.e ** (matrix_tmp - c), 0))
+    # print('np.e ** (matrix_tmp - c)', np.e ** (matrix_tmp - c))
+    softmax_func = np.e ** (matrix_tmp - c) / np.sum(np.e ** (matrix_tmp - c), 0) 
+    # in this case paramter 0 in np.Sum means sum all elements in each col axis, so 1 is Sum all elemens in each row axis.
+    # so in this case, there is no keepdims paramter in np.sum, the result of the np.sum is 1 * n 
+
+    # print('softmax_func',softmax_func)
+    return softmax_func
+
     raise NotImplementedError
 
 def compute_cost_function(X, Y, theta, lambda_factor, temp_parameter):

@@ -25,7 +25,7 @@ plot_images(train_x[0:20, :])
 # TODO: first fill out functions in linear_regression.py, otherwise the functions below will not work
 
 
-def run_linear_regression_on_MNIST(lambda_factor=1):
+def run_linear_regression_on_MNIST(lambda_factor=0.01):
     """
     Trains linear regression, classifies test data, computes test error on test set
 
@@ -33,7 +33,7 @@ def run_linear_regression_on_MNIST(lambda_factor=1):
         Final test error
     """
     train_x, train_y, test_x, test_y = get_MNIST_data()
-    train_x_bias = np.hstack([np.ones([train_x.shape[0], 1]), train_x])
+    train_x_bias = np.hstack([np.ones([train_x.shape[0], 1]), train_x]) # train_x.shape[0] is a row, 1 is a col, so n * 1 + train_x data 
     test_x_bias = np.hstack([np.ones([test_x.shape[0], 1]), test_x])
     theta = closed_form(train_x_bias, train_y, lambda_factor)
     test_error = compute_test_error_linear(test_x_bias, test_y, theta)
