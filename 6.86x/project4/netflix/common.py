@@ -98,4 +98,8 @@ def bic(X: np.ndarray, mixture: GaussianMixture,
     Returns:
         float: the BIC for this mixture
     """
-    raise NotImplementedError
+    n, d = X.shape
+    mu, var, p = mixture
+    n_para = mu.size + var.size + p.size - 1
+    BIC = log_likelihood - 1/2 * n_para * np.log(n)
+    return BIC
